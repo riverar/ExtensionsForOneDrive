@@ -1,0 +1,30 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {98BEF305-AD58-410A-9864-93ED872F8549} = s 'Extensions for OneDrive Context Menu Handler'
+		{
+			val ContextMenuOptIn = s 'http://twitter.com/WithinRafael'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			TypeLib = s '{89676DD9-9BB1-40B6-8764-D3665A0494C3}'
+			Version = s '1.0'
+		}
+	}
+}
+
+HKCR
+{
+  NoRemove AllFilesystemObjects
+  {
+    NoRemove ShellEx
+    {
+      NoRemove ContextMenuHandlers
+      {
+        ForceRemove ExtensionsForOneDrive = s '{98BEF305-AD58-410A-9864-93ED872F8549}'
+      }
+    }
+  }
+}

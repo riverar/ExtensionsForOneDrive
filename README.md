@@ -38,3 +38,8 @@ In the short term, I'd like to:
 ## Support
 
 Please use the issue tracker to submit any problems you run into. More general questions and comments can be directed to  me, [@WithinRafael](http://twitter.com/WithinRafael), on Twitter.
+
+## Additional credits
+
+Icon: "Cloud" by Pieter J. Smits from The Noun Project
+http://thenounproject.com/term/cloud/6853/

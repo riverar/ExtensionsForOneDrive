@@ -16,7 +16,7 @@ Place all bits into a permanent folder (e.g. `C:\Program Files\Extensions for On
 
 This will register the shell extension and [ngen](http://msdn.microsoft.com/en-us/library/6t9t5wcf.aspx) managed binaries for faster start up performance.
 
-A restart of the shell is **not** required for first time users.
+Restart Windows (or the shell) for changes to take effect.
 
 ## Uninstallation
 

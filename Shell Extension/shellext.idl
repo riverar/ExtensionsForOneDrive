@@ -5,17 +5,17 @@ import "shobjidl.idl";
 [version(1.0), uuid(89676DD9-9BB1-40B6-8764-D3665A0494C3)]
 library shellextLib
 {
-	importlib("stdole2.tlb");
-	
-	[uuid(47B595FA-1976-44A5-9D10-2F2BD069BA4A)]
-	coclass OverlayHandler
-	{
-		[default] interface IUnknown;
-	};
-	
-	[uuid(98BEF305-AD58-410A-9864-93ED872F8549)]
-	coclass ContextMenuHandler
-	{
-		[default] interface IContextMenu;
-	};
+    importlib("stdole2.tlb");
+    
+    [uuid(47B595FA-1976-44A5-9D10-2F2BD069BA4A)]
+    coclass OverlayHandler
+    {
+        [default] interface IUnknown;
+    };
+    
+    [uuid(98BEF305-AD58-410A-9864-93ED872F8549)]
+    coclass ContextMenuHandler
+    {
+        [default] interface IContextMenu;
+    };
 };

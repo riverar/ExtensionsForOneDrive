@@ -5,41 +5,41 @@ using namespace ATL;
 class CExtensionBase
 {
 public:
-	CExtensionBase()
-	{
-		InitializeCriticalSection(&this->_cs);
-	}
+    CExtensionBase()
+    {
+        InitializeCriticalSection(&this->_cs);
+    }
 
-	~CExtensionBase()
-	{
-		DeleteCriticalSection(&this->_cs);
-	}
+    ~CExtensionBase()
+    {
+        DeleteCriticalSection(&this->_cs);
+    }
 
-	HRESULT EnsureOneDriveFolderCached()
-	{
-		HRESULT hr = S_OK;
+    HRESULT EnsureOneDriveFolderCached()
+    {
+        HRESULT hr = S_OK;
 
-		if (this->_spszCachedOneDriveFolder == nullptr)
-		{
-			CComHeapPtr<wchar_t> spszLocatedOneDriveFolder;
+        if (this->_spszCachedOneDriveFolder == nullptr)
+        {
+            CComHeapPtr<wchar_t> spszLocatedOneDriveFolder;
 
-			hr = SHGetKnownFolderPath(FOLDERID_SkyDrive, KF_FLAG_DONT_VERIFY | KF_FLAG_NO_ALIAS, nullptr, &spszLocatedOneDriveFolder);
-			if (SUCCEEDED(hr))
-			{
-				EnterCriticalSection(&this->_cs);
+            hr = SHGetKnownFolderPath(FOLDERID_SkyDrive, KF_FLAG_DONT_VERIFY | KF_FLAG_NO_ALIAS, nullptr, &spszLocatedOneDriveFolder);
+            if (SUCCEEDED(hr))
+            {
+                EnterCriticalSection(&this->_cs);
 
-				if (this->_spszCachedOneDriveFolder == nullptr)
-				{
-					this->_spszCachedOneDriveFolder = spszLocatedOneDriveFolder;
-				}
+                if (this->_spszCachedOneDriveFolder == nullptr)
+                {
+                    this->_spszCachedOneDriveFolder = spszLocatedOneDriveFolder;
+                }
 
-				LeaveCriticalSection(&this->_cs);
-			}
-		}
+                LeaveCriticalSection(&this->_cs);
+            }
+        }
 
-		return hr;
-	}
+        return hr;
+    }
 
-	CComHeapPtr<wchar_t> _spszCachedOneDriveFolder;
-	CRITICAL_SECTION _cs;
+    CComHeapPtr<wchar_t> _spszCachedOneDriveFolder;
+    CRITICAL_SECTION _cs;
 };

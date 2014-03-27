@@ -8,142 +8,142 @@ using Microsoft.Live.Public;
 
 namespace ExtensionsForOneDrive.Models
 {
-	public interface ILiveService
-	{
-		bool IsAuthenticated { get; set; }
+    public interface ILiveService
+    {
+        bool IsAuthenticated { get; set; }
 
-		string GetLoginUrl();
+        string GetLoginUrl();
 
-		void GetTokens(string authorizationCode);
+        void GetTokens(string authorizationCode);
 
-		string GetSharedReadLink(string fileID);
-	}
+        string GetSharedReadLink(string fileID);
+    }
 
-	public class LiveService : ILiveService
-	{
-		private readonly ILiveAuthClient _authClient;
-		private readonly IRefreshTokenHandler _refreshTokenHandler;
-		private readonly IConfigurationService _configurationService;
-		private readonly IEnumerable<string> _scopes = new List<string> {
-			"wl.signin", "wl.offline_access", "wl.skydrive", "wl.skydrive_update"
-		};
+    public class LiveService : ILiveService
+    {
+        private readonly ILiveAuthClient _authClient;
+        private readonly IRefreshTokenHandler _refreshTokenHandler;
+        private readonly IConfigurationService _configurationService;
+        private readonly IEnumerable<string> _scopes = new List<string> {
+            "wl.signin", "wl.offline_access", "wl.skydrive", "wl.skydrive_update"
+        };
 
-		private LiveConnectSession _session;
-		private Timer _refreshTimer;
+        private LiveConnectSession _session;
+        private Timer _refreshTimer;
 
-		public LiveService(IRefreshTokenHandler refreshTokenHandler, ILiveAuthClient authClient, IConfigurationService configurationService)
-		{
-			_refreshTokenHandler = refreshTokenHandler;
-			_configurationService = configurationService;
-			_authClient = authClient;
+        public LiveService(IRefreshTokenHandler refreshTokenHandler, ILiveAuthClient authClient, IConfigurationService configurationService)
+        {
+            _refreshTokenHandler = refreshTokenHandler;
+            _configurationService = configurationService;
+            _authClient = authClient;
 
-			_refreshTimer = new Timer();
-			ConfigureRefreshTimer();
+            _refreshTimer = new Timer();
+            ConfigureRefreshTimer();
 
-			_configurationService.PropertyChanged += (_, args) =>
-			{
-				if (args.PropertyName == "TokenExpiration")
-				{
-					ConfigureRefreshTimer();
-				}
-			};
-		}
+            _configurationService.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == "TokenExpiration")
+                {
+                    ConfigureRefreshTimer();
+                }
+            };
+        }
 
-		private void ConfigureRefreshTimer()
-		{
-			_refreshTimer.Stop();
-			_refreshTimer.AutoReset = false;
-			_refreshTimer.Elapsed += RefreshTimerElapsed;
+        private void ConfigureRefreshTimer()
+        {
+            _refreshTimer.Stop();
+            _refreshTimer.AutoReset = false;
+            _refreshTimer.Elapsed += RefreshTimerElapsed;
 
-			if(_configurationService.GetValue<int>("Configured") > 0)
-			{
-				var expiration = DateTime.Parse(_configurationService.GetValue<string>("TokenExpiration"));
+            if(_configurationService.GetValue<int>("Configured") > 0)
+            {
+                var expiration = DateTime.Parse(_configurationService.GetValue<string>("TokenExpiration"));
 
-				if (DateTime.Now < expiration)
-				{
-					var span = expiration - DateTime.Now;
-					_refreshTimer.Interval = span.TotalMilliseconds;
-				}
-				else
-				{
-					_refreshTimer.Interval = TimeSpan.FromSeconds(3).TotalMilliseconds;
-				}
+                if (DateTime.Now < expiration)
+                {
+                    var span = expiration - DateTime.Now;
+                    _refreshTimer.Interval = span.TotalMilliseconds;
+                }
+                else
+                {
+                    _refreshTimer.Interval = TimeSpan.FromSeconds(3).TotalMilliseconds;
+                }
 
-				_refreshTimer.Start();
-			}
-		}
+                _refreshTimer.Start();
+            }
+        }
 
-		public bool IsAuthenticated { get; set; }
+        public bool IsAuthenticated { get; set; }
 
-		public string GetLoginUrl()
-		{
-			return _authClient.GetLoginUrl(_scopes);
-		}
+        public string GetLoginUrl()
+        {
+            return _authClient.GetLoginUrl(_scopes);
+        }
 
-		public void GetTokens(string authorizationCode)
-		{
-			var task = _authClient.ExchangeAuthCodeAsync(authorizationCode);
-			task.Wait();
+        public void GetTokens(string authorizationCode)
+        {
+            var task = _authClient.ExchangeAuthCodeAsync(authorizationCode);
+            task.Wait();
 
-			// TODO: Failure case
+            // TODO: Failure case
 
-			_session = task.Result;
-			
-			SaveTokens();
+            _session = task.Result;
+            
+            SaveTokens();
 
-			this.IsAuthenticated = true;
-		}
+            this.IsAuthenticated = true;
+        }
 
-		private void RefreshTokens()
-		{
-			var task = _authClient.IntializeAsync(_scopes);
-			task.Wait();
+        private void RefreshTokens()
+        {
+            var task = _authClient.IntializeAsync(_scopes);
+            task.Wait();
 
-			// TODO: Failure case
+            // TODO: Failure case
 
-			// TODO: Lock session
+            // TODO: Lock session
 
-			_session = task.Result.Session;
-			
-			SaveTokens();
+            _session = task.Result.Session;
+            
+            SaveTokens();
 
-			this.IsAuthenticated = true;
-		}
+            this.IsAuthenticated = true;
+        }
 
-		private void SaveTokens()
-		{
-			_configurationService.SetValue("AccessToken", _session.AccessToken);
-			_configurationService.SetValue("RefreshToken", _session.RefreshToken);
-			_configurationService.SetValue("TokenExpiration", DateTime.Now.AddMinutes(45).ToString());
-			_configurationService.SetValue("IsConfigured", 1);
-		}
+        private void SaveTokens()
+        {
+            _configurationService.SetValue("AccessToken", _session.AccessToken);
+            _configurationService.SetValue("RefreshToken", _session.RefreshToken);
+            _configurationService.SetValue("TokenExpiration", DateTime.Now.AddMinutes(45).ToString());
+            _configurationService.SetValue("IsConfigured", 1);
+        }
 
-		private void RefreshTimerElapsed(object sender, ElapsedEventArgs args)
-		{
-			this.RefreshTokens();
-		}
+        private void RefreshTimerElapsed(object sender, ElapsedEventArgs args)
+        {
+            this.RefreshTokens();
+        }
 
-		public string GetSharedReadLink(string fileID)
-		{
-			if (string.IsNullOrWhiteSpace(fileID))
-				throw new ArgumentNullException("id");
+        public string GetSharedReadLink(string fileID)
+        {
+            if (string.IsNullOrWhiteSpace(fileID))
+                throw new ArgumentNullException("id");
 
-			var filePrefix = fileID.Split('!').First();
+            var filePrefix = fileID.Split('!').First();
 
-			if (_session == null)
-			{
-				this.RefreshTokens();
-			}
+            if (_session == null)
+            {
+                this.RefreshTokens();
+            }
 
-			var connectClient = new LiveConnectClient(_session);
-			var task = connectClient.GetAsync(string.Format("file.{0}.{1}/shared_read_link", filePrefix, fileID));
-			task.Wait();
+            var connectClient = new LiveConnectClient(_session);
+            var task = connectClient.GetAsync(string.Format("file.{0}.{1}/shared_read_link", filePrefix, fileID));
+            task.Wait();
 
-			// TODO: Error condition
+            // TODO: Error condition
 
-			// HACK
-			var result = task.Result.Result;
-			return result["link"] as string;
-		}
-	}
+            // HACK
+            var result = task.Result.Result;
+            return result["link"] as string;
+        }
+    }
 }

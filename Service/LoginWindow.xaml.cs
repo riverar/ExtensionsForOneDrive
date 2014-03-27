@@ -6,13 +6,13 @@ using Microsoft.Practices.ServiceLocation;
 
 namespace ExtensionsForOneDrive
 {
-	public partial class LoginWindow : Window
-	{
-		public LoginWindow()
-		{
-			InitializeComponent();
+    public partial class LoginWindow : Window
+    {
+        public LoginWindow()
+        {
+            InitializeComponent();
 
-			this.DataContext = ServiceLocator.Current.GetInstance<LoginWindowViewModel>();
-		}
-	}
+            this.DataContext = ServiceLocator.Current.GetInstance<LoginWindowViewModel>();
+        }
+    }
 }

@@ -1,23 +1,23 @@
 ﻿<Window x:Class="ExtensionsForOneDrive.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
-		xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Extras.WPF45"  
-		xmlns:util="clr-namespace:ExtensionsForOneDrive.Utilities"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
+        xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Extras.WPF45"  
+        xmlns:util="clr-namespace:ExtensionsForOneDrive.Utilities"
         Title="Log into OneDrive" Height="600" Width="550" ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
-	<i:Interaction.Triggers>
-		<i:EventTrigger EventName="Loaded">
-			<cmd:EventToCommand Command="{Binding Loaded}" PassEventArgsToCommand="True" />
-		</i:EventTrigger>
-	</i:Interaction.Triggers>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <cmd:EventToCommand Command="{Binding Loaded}" PassEventArgsToCommand="True" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
 
-	<Grid>
-		<WebBrowser util:WebBrowserUtility.BindableSource="{Binding CurrentPage}">
-			<i:Interaction.Triggers>
-				<i:EventTrigger EventName="Navigated">
-					<cmd:EventToCommand Command="{Binding Navigated}" PassEventArgsToCommand="True" />
-				</i:EventTrigger>
-			</i:Interaction.Triggers>
-		</WebBrowser>
-	</Grid>
+    <Grid>
+        <WebBrowser util:WebBrowserUtility.BindableSource="{Binding CurrentPage}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Navigated">
+                    <cmd:EventToCommand Command="{Binding Navigated}" PassEventArgsToCommand="True" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </WebBrowser>
+    </Grid>
 </Window>

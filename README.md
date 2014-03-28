@@ -6,13 +6,17 @@ Extensions for OneDrive currently adds:
 * A "Copy OneDrive public link" context menu item
 * A shell icon overlay to indicate state of cloud->local sync
 
+## Download
+
+See [Releases](https://github.com/riverar/ExtensionsForOneDrive/releases) for downloadable bits.
+
 ## Installation
 
 Place all bits into a permanent folder (e.g. `C:\Program Files\Extensions for OneDrive`) and execute `Install.bat` (as a user with administrative privileges).
 
 This will register the shell extension and [ngen](http://msdn.microsoft.com/en-us/library/6t9t5wcf.aspx) managed binaries for faster start up performance.
 
-A restart of the shell is **not** required for first time users.
+Restart Windows (or the shell) for changes to take effect.
 
 ## Uninstallation
 

@@ -12,7 +12,7 @@ COverlayHandler::COverlayHandler()
 {
 }
 
-HRESULT COverlayHandler::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* pIndex, DWORD* pdwFlags)
+HRESULT COverlayHandler::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* /*pIndex*/, DWORD* pdwFlags)
 {
     *pdwFlags = ISIOI_ICONFILE;
     HRESULT hr = S_OK;
@@ -33,7 +33,7 @@ HRESULT COverlayHandler::GetPriority(int* pPriority)
     return S_OK;
 }
 
-HRESULT COverlayHandler::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
+HRESULT COverlayHandler::IsMemberOf(PCWSTR pwszPath, DWORD /*dwAttrib*/)
 {
     HRESULT hr = EnsureOneDriveFolderCached();
     if (SUCCEEDED(hr))

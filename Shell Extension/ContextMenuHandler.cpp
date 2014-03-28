@@ -18,7 +18,7 @@ CContextMenuHandler::~CContextMenuHandler()
 {
 }
 
-HRESULT __stdcall CContextMenuHandler::Initialize(PCIDLIST_ABSOLUTE /*pidlFolder*/, IDataObject *pdtobj, HKEY /*hkeyProgID*/)
+IFACEMETHODIMP CContextMenuHandler::Initialize(PCIDLIST_ABSOLUTE /*pidlFolder*/, IDataObject *pdtobj, HKEY /*hkeyProgID*/)
 {
     this->_fShowMenuItem = false;
 
@@ -29,7 +29,7 @@ HRESULT __stdcall CContextMenuHandler::Initialize(PCIDLIST_ABSOLUTE /*pidlFolder
         hr = SHCreateShellItemArrayFromDataObject(pdtobj, IID_PPV_ARGS(&spShellItemArray));
         if (SUCCEEDED(hr))
         {
-            DWORD dwNumItems = 0;
+            DWORD dwNumItems;
             hr = spShellItemArray->GetCount(&dwNumItems);
             if (SUCCEEDED(hr) && dwNumItems == 1)
             {
@@ -41,7 +41,7 @@ HRESULT __stdcall CContextMenuHandler::Initialize(PCIDLIST_ABSOLUTE /*pidlFolder
                     hr = spShellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &spszDisplayName);
                     if (SUCCEEDED(hr))
                     {
-                        SFGAOF sfgaoAttributes = {};
+                        SFGAOF sfgaoAttributes;
                         hr = spShellItem->GetAttributes(SFGAO_STREAM | SFGAO_FOLDER, &sfgaoAttributes);
 
                         // Some dastardly shell items, like .zips, may have SFGAO_FOLDER set.
@@ -73,21 +73,23 @@ HRESULT __stdcall CContextMenuHandler::Initialize(PCIDLIST_ABSOLUTE /*pidlFolder
     return hr;
 }
 
-HRESULT __stdcall CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uFlags, UINT *pwReserved, LPSTR pszName, UINT cchMax)
+IFACEMETHODIMP CContextMenuHandler::GetCommandString(UINT_PTR /*idCmd*/, UINT /*uFlags*/, UINT * /*pwReserved*/, LPSTR /*pszName*/, UINT /*cchMax*/)
 {
     return E_NOTIMPL;
 }
 
-HRESULT __stdcall CContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
+IFACEMETHODIMP CContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu, UINT idCmdFirst, UINT /*idCmdLast*/, UINT uFlags)
 {
-    HRESULT hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
+    HRESULT hr = S_OK;
 
     if (IS_FLAG_CLEAR(uFlags, CMF_DEFAULTONLY) && this->_fShowMenuItem)
     {
         UINT uFlags = MF_STRING | MF_BYPOSITION;
 
-        if (InsertMenu(hMenu, indexMenu, uFlags, idCmdFirst, L"Copy public OneDrive link") == TRUE)
+        if (InsertMenu(hMenu, indexMenu, uFlags, idCmdFirst, L"Copy public OneDrive &link"))
         {
+            // Quirky return semantics
+            // http://msdn.microsoft.com/en-us/library/windows/desktop/bb776097.aspx
             hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
         }
         else
@@ -99,28 +101,27 @@ HRESULT __stdcall CContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexM
     return hr;
 }
 
-HRESULT __stdcall CContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO pici)
+IFACEMETHODIMP CContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO /*pici*/)
 {
     HRESULT hr = E_FAIL;
 
-    if (OpenClipboard(NULL) && EmptyClipboard() && CloseClipboard())
+    if (OpenClipboard(nullptr) && EmptyClipboard() && CloseClipboard())
     {
         CComPtr<IShellItem2> spShellItem;
         hr = SHCreateItemFromParsingName(this->_spszTargetPath, NULL, IID_PPV_ARGS(&spShellItem));
-
         if (SUCCEEDED(hr))
         {
             CComPtr<IPropertyStore> spPropertyStore;
             hr = spShellItem->GetPropertyStore(GPS_EXTRINSICPROPERTIES, IID_PPV_ARGS(&spPropertyStore));
-
             if (SUCCEEDED(hr))
             {
-                PROPVARIANT pvFileIdentifier = {};
+                PROPVARIANT pvFileIdentifier;
+                PropVariantInit(&pvFileIdentifier);
                 hr = spPropertyStore->GetValue(PKEY_StorageProviderFileIdentifier, &pvFileIdentifier);
-
                 if (SUCCEEDED(hr))
                 {
                     hr = HandoffToService(pvFileIdentifier.pwszVal);
+                    PropVariantClear(&pvFileIdentifier);
                 }
             }
         }
@@ -154,7 +155,7 @@ HRESULT CContextMenuHandler::HandoffToService(LPCWSTR pwszFileIdentifier)
         {
             if (!CContextMenuHandler::IsServiceRunning())
             {
-                LPTHREAD_START_ROUTINE lpThreadStart = [](LPVOID lpThreadParameter) -> DWORD
+                LPTHREAD_START_ROUTINE lpThreadStart = [](LPVOID) -> DWORD
                 {
                     HRESULT hr = CContextMenuHandler::StartHelperService();
                     if (SUCCEEDED(hr))
@@ -186,31 +187,6 @@ HRESULT CContextMenuHandler::HandoffToService(LPCWSTR pwszFileIdentifier)
             {
                 hr = SignalDataAvailable();
             }
-        }
-    }
-
-    return hr;
-}
-
-HRESULT CContextMenuHandler::EnsureOneDriveFolderCached()
-{
-    HRESULT hr = S_OK;
-
-    if (this->_spszCachedOneDriveFolder == nullptr)
-    {
-        CComHeapPtr<wchar_t> spszLocatedOneDriveFolder;
-
-        hr = SHGetKnownFolderPath(FOLDERID_SkyDrive, KF_FLAG_DONT_VERIFY | KF_FLAG_NO_ALIAS, nullptr, &spszLocatedOneDriveFolder);
-        if (SUCCEEDED(hr))
-        {
-            EnterCriticalSection(&this->_cs);
-
-            if (this->_spszCachedOneDriveFolder == nullptr)
-            {
-                this->_spszCachedOneDriveFolder = spszLocatedOneDriveFolder;
-            }
-
-            LeaveCriticalSection(&this->_cs);
         }
     }
 
@@ -269,9 +245,9 @@ HRESULT CContextMenuHandler::GetServiceExecutablePath(LPWSTR* ppszServiceExecuta
     HRESULT    hr = HRESULT_FROM_WIN32(RegOpenKey(HKEY_CLASSES_ROOT, L"CLSID\\{98BEF305-AD58-410A-9864-93ED872F8549}\\InprocServer32", &hkInproc));
     if (SUCCEEDED(hr))
     {
-        wchar_t szLibPath[MAX_PATH] = {};
+        wchar_t szLibPath[MAX_PATH];
         long cchLibPath = ARRAYSIZE(szLibPath);
-        long cbLibPath = sizeof(wchar_t) * cchLibPath;
+        long cbLibPath = sizeof(szLibPath[0]);
 
         hr = HRESULT_FROM_WIN32(RegQueryValueW(hkInproc, nullptr, szLibPath, &cbLibPath));
         if (SUCCEEDED(hr))

@@ -32,15 +32,14 @@ public:
     DECLARE_PROTECT_FINAL_CONSTRUCT()
 
     // IShellExtInit
-    HRESULT __stdcall Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject *pdtobj, HKEY hkeyProgID);
+    IFACEMETHODIMP Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject *pdtobj, HKEY hkeyProgID);
     
     // IContextMenu
-    HRESULT __stdcall GetCommandString(UINT_PTR idCmd, UINT uFlags, UINT *pwReserved, LPSTR pszName, UINT cchMax);
-    HRESULT __stdcall QueryContextMenu(HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags);
-    HRESULT __stdcall InvokeCommand(LPCMINVOKECOMMANDINFO pici);
+    IFACEMETHODIMP GetCommandString(UINT_PTR idCmd, UINT uFlags, UINT *pwReserved, LPSTR pszName, UINT cchMax);
+    IFACEMETHODIMP QueryContextMenu(HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags);
+    IFACEMETHODIMP InvokeCommand(LPCMINVOKECOMMANDINFO pici);
 
 private:
-    HRESULT EnsureOneDriveFolderCached();
     HRESULT HandoffToService(LPCWSTR pwszIdentifier);
 
     static HRESULT GetServiceExecutablePath(LPWSTR* ppszServiceExecutablePath);

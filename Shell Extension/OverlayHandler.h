@@ -31,12 +31,9 @@ public:
     DECLARE_PROTECT_FINAL_CONSTRUCT()
 
     // IShellIconOverlayIdentifier
-    HRESULT __stdcall GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* pIndex, DWORD* pdwFlags);
-    HRESULT __stdcall GetPriority(int* pPriority);
-    HRESULT __stdcall IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib);
-    
-private:
-    HRESULT GetOneDriveUserFolder(LPWSTR* ppszOneDriveFolder);
+    IFACEMETHODIMP GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* pIndex, DWORD* pdwFlags);
+    IFACEMETHODIMP GetPriority(int* pPriority);
+    IFACEMETHODIMP IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(OverlayHandler), COverlayHandler)

@@ -247,7 +247,7 @@ HRESULT CContextMenuHandler::GetServiceExecutablePath(LPWSTR* ppszServiceExecuta
     {
         wchar_t szLibPath[MAX_PATH];
         long cchLibPath = ARRAYSIZE(szLibPath);
-        long cbLibPath = sizeof(szLibPath[0]);
+        long cbLibPath = sizeof(szLibPath[0]) * cchLibPath;
 
         hr = HRESULT_FROM_WIN32(RegQueryValueW(hkInproc, nullptr, szLibPath, &cbLibPath));
         if (SUCCEEDED(hr))

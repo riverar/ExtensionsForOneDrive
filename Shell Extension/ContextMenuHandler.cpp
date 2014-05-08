@@ -101,30 +101,37 @@ IFACEMETHODIMP CContextMenuHandler::QueryContextMenu(HMENU hMenu, UINT indexMenu
     return hr;
 }
 
-IFACEMETHODIMP CContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO /*pici*/)
+IFACEMETHODIMP CContextMenuHandler::InvokeCommand(LPCMINVOKECOMMANDINFO pici)
 {
     HRESULT hr = E_FAIL;
 
-    if (OpenClipboard(nullptr) && EmptyClipboard() && CloseClipboard())
+    if (IS_INTRESOURCE(pici->lpVerb) && LOWORD(pici->lpVerb) == 0)
     {
-        CComPtr<IShellItem2> spShellItem;
-        hr = SHCreateItemFromParsingName(this->_spszTargetPath, NULL, IID_PPV_ARGS(&spShellItem));
-        if (SUCCEEDED(hr))
+        if (OpenClipboard(nullptr) && EmptyClipboard() && CloseClipboard())
         {
-            CComPtr<IPropertyStore> spPropertyStore;
-            hr = spShellItem->GetPropertyStore(GPS_EXTRINSICPROPERTIES, IID_PPV_ARGS(&spPropertyStore));
+            CComPtr<IShellItem2> spShellItem;
+            hr = SHCreateItemFromParsingName(this->_spszTargetPath, NULL, IID_PPV_ARGS(&spShellItem));
             if (SUCCEEDED(hr))
             {
-                PROPVARIANT pvFileIdentifier;
-                PropVariantInit(&pvFileIdentifier);
-                hr = spPropertyStore->GetValue(PKEY_StorageProviderFileIdentifier, &pvFileIdentifier);
+                CComPtr<IPropertyStore> spPropertyStore;
+                hr = spShellItem->GetPropertyStore(GPS_EXTRINSICPROPERTIES, IID_PPV_ARGS(&spPropertyStore));
                 if (SUCCEEDED(hr))
                 {
-                    hr = HandoffToService(pvFileIdentifier.pwszVal);
-                    PropVariantClear(&pvFileIdentifier);
+                    PROPVARIANT pvFileIdentifier;
+                    PropVariantInit(&pvFileIdentifier);
+                    hr = spPropertyStore->GetValue(PKEY_StorageProviderFileIdentifier, &pvFileIdentifier);
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = HandoffToService(pvFileIdentifier.pwszVal);
+                        PropVariantClear(&pvFileIdentifier);
+                    }
                 }
             }
         }
+    }
+    else
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
     }
 
     return hr;
